@@ -30,4 +30,16 @@ def is_allocation_feasible(
 
     """
     # TODO: Implement this function
-    raise NotImplementedError("suggest_slots function has not been implemented yet")
+    resources_copy = {k: v for k, v in resources.items()}
+    for request in requests:
+        if not isinstance(request, dict):
+            raise ValueError("Each request must be a dictionary")
+        for resource, amount in request.items():
+            if resource not in resources:
+                return False
+            if not isinstance(amount, (int, float)) or amount < 0:
+                raise ValueError("Resource amounts must be non-negative numbers")
+            if amount > resources_copy[resource]:
+                return False
+            resources_copy[resource] -= amount
+    return True
