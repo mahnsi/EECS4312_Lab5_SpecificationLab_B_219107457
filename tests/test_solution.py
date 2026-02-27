@@ -1,5 +1,5 @@
-## Student Name:
-## Student ID: 
+## Student Name: Mahnsi Ruparelia
+## Student ID: 219107457
 
 """
 Public test suite for the meeting slot suggestion exercise.
@@ -8,7 +8,7 @@ Students can run these tests locally to check basic correctness of their impleme
 The hidden test suite used for grading contains additional edge cases and will not be
 available to students.
 """
-from solution import is_allocation_feasible
+from src.solution import is_allocation_feasible
 import pytest
 
 
@@ -46,3 +46,45 @@ def test_non_dict_request_raises():
         is_allocation_feasible(resources, requests)
 
 """TODO: Add at least 5 additional test cases to test your implementation."""
+
+def test_empty_requests():
+    # Empty Requests
+    resources = {'cpu': 10, 'mem': 20}
+    requests = []
+    assert is_allocation_feasible(resources, requests) is True
+
+def test_request_with_unmentioned_resource_defaults_to_zero():
+    # Partial Resource Usage
+    # Constraint: resources not mentioned in a request are treated as 0
+    # Reason: ensure function does not incorrectly require all resources per request
+    resources = {'cpu': 5, 'mem': 10}
+    requests = [
+        {'cpu': 3},
+        {'mem': 8}
+    ]
+    assert is_allocation_feasible(resources, requests) is True
+
+def test_negative_request_amount():
+    # Negative Request Amount
+    # Constraint: resource demands must be non-negative
+    # Reason: prevent logically invalid allocations
+    resources = {'cpu': 10}
+    requests = [{'cpu': -3}]
+    with pytest.raises(ValueError):
+        is_allocation_feasible(resources, requests)
+
+def test_float_amounts_feasible():
+    # Float Resource Amounts
+    # Constraint: Number type includes floats, not just ints
+    # Reason: ensure float demands are handled correctly and don't cause type errors
+    resources = {'cpu': 7.0, 'mem': 10.5}
+    requests = [{'cpu': 3.5, 'mem': 4.0}, {'cpu': 3.5, 'mem': 6.5}]
+    assert is_allocation_feasible(resources, requests) is True
+
+def test_exact_capacity_boundary():
+    # Exact Capacity Match (Boundary)
+    # Constraint: total demand == total capacity should be feasible
+    # Reason: ensure boundary condition is treated as valid, not incorrectly rejected
+    resources = {'cpu': 9, 'mem': 15}
+    requests = [{'cpu': 4, 'mem': 7}, {'cpu': 5, 'mem': 8}]
+    assert is_allocation_feasible(resources, requests) is True
