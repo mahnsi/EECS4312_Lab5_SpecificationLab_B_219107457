@@ -17,7 +17,7 @@ def test_basic_feasible_single_resource():
     # Constraint: total demand <= capacity
     # Reason: check basic functional requirement
     resources = {'cpu': 10}
-    requests = [{'cpu': 3}, {'cpu': 4}, {'cpu': 3}]
+    requests = [{'cpu': 3}, {'cpu': 4}, {'cpu': 2}]
     assert is_allocation_feasible(resources, requests) is True
 
 def test_multi_resource_infeasible_one_overloaded():
@@ -77,14 +77,38 @@ def test_float_amounts_feasible():
     # Float Resource Amounts
     # Constraint: Number type includes floats, not just ints
     # Reason: ensure float demands are handled correctly and don't cause type errors
-    resources = {'cpu': 7.0, 'mem': 10.5}
+    resources = {'cpu': 7.0, 'mem': 11.5}
     requests = [{'cpu': 3.5, 'mem': 4.0}, {'cpu': 3.5, 'mem': 6.5}]
     assert is_allocation_feasible(resources, requests) is True
 
 def test_exact_capacity_boundary():
-    # Exact Capacity Match (Boundary)
+    # All Resources Fully Consumed — infeasible
     # Constraint: total demand == total capacity should be feasible
     # Reason: ensure boundary condition is treated as valid, not incorrectly rejected
     resources = {'cpu': 9, 'mem': 15}
     requests = [{'cpu': 4, 'mem': 7}, {'cpu': 5, 'mem': 8}]
+    assert is_allocation_feasible(resources, requests) is False
+
+def test_one_resource_fully_allocated_still_feasible():
+    # One Resource Fully Consumed, One Has Remainder
+    # Constraint: only one resource needs leftover capacity
+    # Reason: confirm that exhausting one resource is acceptable if another has slack
+    resources = {'cpu': 10, 'mem': 20}
+    requests = [{'cpu': 10}, {'mem': 5}]  # cpu fully consumed, mem has 15 remaining
     assert is_allocation_feasible(resources, requests) is True
+
+def test_all_resources_have_remainder():
+    # All Resources Partially Allocated
+    # Constraint: all resources must retain leftover capacity
+    # Reason: confirm valid case where every resource has slack
+    resources = {'cpu': 10, 'mem': 20}
+    requests = [{'cpu': 4}, {'mem': 10}]  # cpu: 6 left, mem: 10 left
+    assert is_allocation_feasible(resources, requests) is True
+
+def test_single_resource_starts_at_zero_fails():
+    # Single Resource with Zero Capacity
+    # Constraint: resource starts at 0, no remainder possible
+    # Reason: must return False as the only resource can never have remaining capacity
+    resources = {'cpu': 0}
+    requests = [{'cpu': 0}]
+    assert is_allocation_feasible(resources, requests) is False
