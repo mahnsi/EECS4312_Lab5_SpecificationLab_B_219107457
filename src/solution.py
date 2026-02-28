@@ -42,4 +42,4 @@ def is_allocation_feasible(
             if amount > resources_copy[resource]:
                 return False
             resources_copy[resource] -= amount
-    return True
+    return any(v > 0 for v in resources_copy.values())
